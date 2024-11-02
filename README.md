@@ -85,6 +85,29 @@ arxiv = ArxivQueryRun(api_wrapper=arxiv_wrapper)
 ```
 
 ### Agent Setup
+Integrate the above tools into a LangSmith agent to streamline queries.
+```bash
+tools = [wiki, arxiv, retriever_tool]
 
+from langchain_groq import ChatGroq
+llm = ChatGroq(temperature=0, model_name="llama3-70b-8192")
+
+from langchain import hub
+from langchain.agents import create_openai_tools_agent, AgentExecutor
+
+prompt = hub.pull("hwchase17/openai-functions-agent")
+agent = create_openai_tools_agent(llm, tools, prompt)
+agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+```
+
+### Example Queries
+**Run queries with agent_executor:**
+```bash
+# Example query about LangSmith
+agent_executor.invoke({"input": "Tell me about Langsmith in big paragraph form"})
+
+# Example query about a specific paper from Arxiv
+agent_executor.invoke({"input": "What's the paper 1605.08386 about?"})
+```
 
 
