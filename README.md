@@ -28,3 +28,63 @@ from google.colab import userdata
 
 os.environ["GROQ_API_KEY"] = userdata.get('GROQ_API_KEY')
 ```
+## Tools and Agents
+#### Wikipedia Tool
+**Initialize the Wikipedia tool to retrieve summaries for a given topic.**
+
+```bash
+from langchain_community.tools import WikipediaQueryRun
+from langchain_community.utilities import WikipediaAPIWrapper
+
+api = WikipediaAPIWrapper(top_k_results=1, doc_content_chars_max=200)
+wiki = WikipediaQueryRun(api_wrapper=api)
+```
+
+#### Retriever Tool
+1. **Document Loading:** Use WebBaseLoader to load data from specified web pages.
+```bash
+from langchain_community.document_loaders import WebBaseLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+loader = WebBaseLoader("https://docs.smith.langchain.com/")
+docs = loader.load()
+documents = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200).split_documents(docs)
+```
+2. **mbedding Setup:** Set up HuggingFace embeddings to vectorize the documents for retrieval.
+```bash
+from langchain.embeddings import HuggingFaceEmbeddings
+
+embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
+```
+
+3. **Vector Database:** Use Chroma as the vector database for efficient document retrieval.
+
+```bash
+from langchain.vectorstores import Chroma
+
+vectordb = Chroma.from_documents(documents, embeddings)
+retriever = vectordb.as_retriever()
+```
+
+4. **Create Retriever Tool:** Configure the retriever tool for targeted searches.
+```bash
+from langchain.tools.retriever import create_retriever_tool
+
+retriever_tool = create_retriever_tool(retriever, "langsmith_search", 
+                                       "Search for information about LangSmith.")
+```
+
+### Arxiv Tool
+**To query research papers from Arxiv:**
+```bash
+from langchain_community.utilities import ArxivAPIWrapper
+from langchain_community.tools import ArxivQueryRun
+
+arxiv_wrapper = ArxivAPIWrapper(top_k_results=1, doc_content_chars_max=100)
+arxiv = ArxivQueryRun(api_wrapper=arxiv_wrapper)
+```
+
+### Agent Setup
+
+
+
